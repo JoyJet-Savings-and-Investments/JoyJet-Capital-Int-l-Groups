@@ -1,0 +1,1530 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="JoyJet Capital Unlimited — on-device portfolio tracker.">
+<meta name="theme-color" content="#07090d">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="JoyJet Capital">
+<title>JoyJet Capital Unlimited</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23f0b90b'/%3E%3Cpath d='M32 12L14 22v16c0 11 8 21 18 24 10-3 18-13 18-24V22L32 12z' fill='%230a0c10'/%3E%3C/svg%3E">
+<style>
+
+:root{
+  --bg:#07090d;--bg2:#0c0f15;--panel:#12161f;--panel2:#1a2030;--line:#273043;
+  --ink:#eef1f6;--mute:#8b95a8;--gold:#f0b90b;--gold2:#ffd45a;--gold-dim:rgba(240,185,11,.12);
+  --up:#12d18b;--down:#ff5c6a;
+  --r:18px;--r-sm:12px;--dock:72px;--safe-b:env(safe-area-inset-bottom,0px);
+  --top:58px;--font:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --ease:cubic-bezier(.22,.8,.24,1);--shadow:0 10px 40px rgba(0,0,0,.35);
+  --max:1120px;--pad:clamp(12px,3vw,22px);
+  --focus:0 0 0 3px rgba(240,185,11,.45);
+}
+[data-theme=light]{
+  --bg:#eef1f6;--bg2:#e6eaf2;--panel:#ffffff;--panel2:#f3f5fa;--line:#d5dbe8;
+  --ink:#10141c;--mute:#5c677a;--gold:#c9970a;--gold2:#e0b12a;--gold-dim:rgba(201,151,10,.12);
+  --up:#0b9f6e;--down:#e03e4f;--shadow:0 10px 36px rgba(16,20,28,.08);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+body{
+  font:15px/1.5 var(--font);background:var(--bg);color:var(--ink);min-height:100dvh;
+  padding-bottom:calc(var(--dock) + var(--safe-b));
+  background-image:
+    radial-gradient(1200px 600px at 100% -10%, rgba(240,185,11,.07), transparent 55%),
+    radial-gradient(900px 500px at -10% 20%, rgba(79,140,255,.05), transparent 50%);
+}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none}
+a{color:inherit;text-decoration:none}
+:focus{outline:none}
+:focus-visible,button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{
+  outline:2px solid var(--gold);outline-offset:2px;box-shadow:var(--focus)
+}
+
+/* Header */
+.topbar{
+  position:sticky;top:0;z-index:60;height:var(--top);
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:0 var(--pad);
+  border-bottom:1px solid color-mix(in srgb,var(--line) 80%,transparent);
+  background:color-mix(in srgb,var(--panel) 86%,transparent);
+  backdrop-filter:blur(18px) saturate(1.2);
+}
+.brand{display:flex;align-items:center;gap:11px;font-weight:800;letter-spacing:-.03em;font-size:1.05rem;min-width:0}
+.brand-mark{
+  width:38px;height:38px;border-radius:11px;flex-shrink:0;
+  background:linear-gradient(145deg,var(--gold),#d97706);
+  display:grid;place-items:center;box-shadow:0 6px 16px rgba(240,185,11,.28)
+}
+.brand-mark svg{width:20px;height:20px}
+.brand small{display:block;font-weight:650;font-size:.6rem;letter-spacing:.1em;color:var(--mute);margin-top:-1px}
+.top-links{display:flex;align-items:center;gap:2px}
+.top-links a,.icon-btn{
+  padding:8px 11px;border-radius:10px;color:var(--mute);font-weight:650;font-size:.84rem;
+  transition:background .15s var(--ease),color .15s var(--ease)
+}
+.top-links a[aria-current=page],.top-links a:hover,.icon-btn:hover{background:var(--panel2);color:var(--gold)}
+.burger{display:none;font-size:1.3rem;padding:6px 10px;color:var(--mute)}
+.install{display:none;background:var(--gold);color:#0a0c10;font-weight:800;font-size:.75rem;padding:8px 12px;border-radius:10px}
+.install.on{display:inline-flex}
+.header-actions{display:flex;align-items:center;gap:4px;flex-shrink:0}
+.mobile-drawer{display:none;position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.55)}
+.mobile-drawer.on{display:block}
+.mobile-drawer nav{
+  position:absolute;top:0;right:0;width:min(310px,90vw);height:100%;overflow-y:auto;
+  background:var(--panel);padding:20px 14px;border-left:1px solid var(--line);
+  display:flex;flex-direction:column;gap:4px;box-shadow:var(--shadow)
+}
+.mobile-drawer a{padding:13px 14px;border-radius:12px;font-weight:650;color:var(--mute)}
+.mobile-drawer a:hover,.mobile-drawer a[aria-current=page]{background:var(--panel2);color:var(--gold)}
+@media(max-width:960px){.top-links .nav-extra{display:none}}
+@media(max-width:760px){.top-links{display:none}.burger{display:inline-flex}}
+
+.shell{width:min(var(--max),100%);margin:0 auto;padding:var(--pad) var(--pad) 32px}
+.view{display:none}
+.view.on{display:block;animation:rise .28s var(--ease)}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* Hero */
+.hero{
+  position:relative;overflow:hidden;
+  background:
+    linear-gradient(135deg, color-mix(in srgb,var(--panel) 88%,var(--gold) 6%), var(--panel2));
+  border:1px solid var(--line);border-radius:calc(var(--r) + 4px);
+  padding:clamp(1.15rem,3vw,1.55rem);margin-bottom:14px;box-shadow:var(--shadow)
+}
+.hero::after{
+  content:"";position:absolute;right:-20%;top:-40%;width:55%;height:140%;
+  background:radial-gradient(circle, rgba(240,185,11,.14), transparent 65%);pointer-events:none
+}
+.hero .greet{font-size:.92rem;color:var(--mute);position:relative;z-index:1}
+.hero .greet strong{color:var(--gold)}
+.hero .bal{
+  font-size:clamp(2rem,7vw,2.7rem);font-weight:800;letter-spacing:-.045em;color:var(--gold);
+  font-variant-numeric:tabular-nums;line-height:1.08;margin:.3rem 0 .85rem;position:relative;z-index:1
+}
+.hero-meta{
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;position:relative;z-index:1
+}
+@media(max-width:640px){.hero-meta{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.meta-pill{
+  background:color-mix(in srgb,var(--bg) 55%,transparent);border:1px solid var(--line);
+  border-radius:12px;padding:10px 12px
+}
+.meta-pill span{display:block;font-size:.68rem;color:var(--mute);margin-bottom:2px;font-weight:600}
+.meta-pill strong{font-size:.92rem;font-weight:800;font-variant-numeric:tabular-nums;color:var(--ink)}
+.up{color:var(--up)!important}.down{color:var(--down)!important}
+
+/* Goal */
+.goal{
+  background:var(--panel);border:1px solid var(--line);border-radius:var(--r);
+  padding:1.05rem 1.1rem;margin-bottom:14px
+}
+.goal-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:.65rem}
+.goal-head h2{font-size:1rem;font-weight:800;letter-spacing:-.02em}
+.goal-dead{
+  font-size:.72rem;font-weight:750;color:var(--gold);background:var(--gold-dim);
+  border:1px solid color-mix(in srgb,var(--gold) 28%,var(--line));
+  padding:6px 11px;border-radius:999px;white-space:nowrap
+}
+.track{height:12px;border-radius:999px;background:var(--panel2);border:1px solid var(--line);overflow:hidden}
+.track>i{display:block;height:100%;width:0%;border-radius:inherit;background:linear-gradient(90deg,var(--gold),var(--gold2));transition:width .45s var(--ease)}
+.goal-foot{display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-top:.55rem;font-size:.75rem;color:var(--mute)}
+.goal-hint{margin-top:12px;display:grid;gap:8px;grid-template-columns:1fr 1fr}
+@media(max-width:520px){.goal-hint{grid-template-columns:1fr}}
+.goal-hint .chip{
+  background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:12px 13px
+}
+.goal-hint .chip b{display:block;color:var(--ink);font-size:.95rem;margin-top:3px;font-variant-numeric:tabular-nums}
+.goal-compact{font-size:.86rem;color:var(--mute);line-height:1.5}
+.goal-compact strong{color:var(--ink)}
+
+/* Panels / layout */
+.panel{
+  background:var(--panel);border:1px solid var(--line);border-radius:var(--r);
+  padding:1.05rem;margin-bottom:12px
+}
+.panel h2{
+  font-size:.7rem;font-weight:750;text-transform:uppercase;letter-spacing:.07em;
+  color:var(--mute);margin-bottom:.75rem
+}
+.grid-2{display:grid;gap:12px}
+@media(min-width:700px){.grid-2{grid-template-columns:1.4fr 1fr}}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  padding:12px 14px;border-radius:12px;font-weight:750;transition:transform .12s var(--ease),filter .12s
+}
+.btn:active{transform:scale(.985)}
+.btn-gold{background:linear-gradient(180deg,var(--gold2),var(--gold));color:#0a0c10;width:100%;box-shadow:0 6px 18px rgba(240,185,11,.22)}
+.btn-ghost{background:transparent;border:1px solid var(--line);color:var(--ink);width:100%}
+.btn-ghost:hover{border-color:var(--gold);color:var(--gold)}
+.btn-danger{background:var(--down);color:#fff;width:100%}
+.btn-sm{padding:7px 11px;font-size:.74rem;width:auto;border-radius:9px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+
+.chart-box{position:relative;height:200px;border-radius:14px;background:var(--bg2);border:1px solid var(--line);overflow:hidden}
+.chart-box svg,.chart-box canvas{width:100%;height:100%;display:block}
+.details{border:1px solid var(--line);border-radius:var(--r);background:var(--panel);margin-bottom:12px}
+.details summary{
+  cursor:pointer;list-style:none;padding:14px 16px;font-weight:750;font-size:.9rem;
+  display:flex;justify-content:space-between;align-items:center
+}
+.details summary::-webkit-details-marker{display:none}
+.details summary::after{content:"▸";color:var(--mute);font-size:.8rem}
+.details[open] summary::after{content:"▾"}
+.details .inner{padding:0 14px 14px}
+
+.tickers{display:grid;grid-template-columns:repeat(auto-fill,minmax(122px,1fr));gap:8px}
+.ticker{
+  border:1px solid var(--line);border-radius:14px;padding:11px;
+  background:var(--bg2);transition:border-color .15s
+}
+.ticker:hover{border-color:color-mix(in srgb,var(--gold) 40%,var(--line))}
+.ticker .sym{font-size:.68rem;color:var(--mute);font-weight:750}
+.ticker .px{font-weight:800;font-variant-numeric:tabular-nums;margin-top:3px}
+.ticker .d{font-size:.7rem;margin-top:2px}
+.tag{display:inline-block;font-size:.58rem;font-weight:750;padding:2px 6px;border-radius:5px;margin-left:4px;background:var(--panel2);color:var(--mute);vertical-align:middle}
+
+.table-wrap{overflow-x:auto;border-radius:12px}
+table{width:100%;border-collapse:collapse;font-size:.86rem}
+th{text-align:left;font-size:.68rem;color:var(--mute);font-weight:700;padding:9px 8px;border-bottom:1px solid var(--line);text-transform:uppercase;letter-spacing:.04em}
+td{padding:12px 8px;border-bottom:1px solid var(--line);vertical-align:middle}
+tr:last-child td{border-bottom:0}
+.asset-cell{display:flex;align-items:center;gap:8px;font-weight:750}
+.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+
+.rail{display:flex;gap:10px;overflow-x:auto;padding:2px 2px 8px;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch}
+.plan{
+  flex:0 0 200px;scroll-snap-align:start;text-align:left;
+  border:1px solid var(--line);border-radius:16px;padding:14px;background:var(--bg2);
+  transition:border-color .15s,box-shadow .15s
+}
+.plan[aria-checked=true]{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold),0 8px 24px rgba(240,185,11,.12)}
+.plan strong{display:block;margin-bottom:4px;font-size:.95rem}
+.plan span{font-size:.7rem;color:var(--mute);display:block;line-height:1.35}
+.plan em{display:block;margin-top:10px;font-style:normal;color:var(--up);font-weight:750;font-size:.75rem}
+.preview{margin-top:12px;border:1px solid var(--line);border-radius:14px;padding:12px;background:var(--bg2);font-size:.84rem}
+
+.field{margin-bottom:.85rem}
+.field label{display:block;font-size:.72rem;color:var(--mute);margin-bottom:6px;font-weight:700}
+.field input,.field select{
+  width:100%;padding:12px 13px;border-radius:12px;border:1px solid var(--line);
+  background:var(--bg2);transition:border-color .15s
+}
+.field input:focus,.field select:focus{border-color:var(--gold)}
+
+.feed{list-style:none}
+.feed li{display:grid;grid-template-columns:10px minmax(0,1fr) auto;gap:10px;padding:12px 0;border-bottom:1px solid var(--line);font-size:.86rem}
+.feed li:last-child{border-bottom:0}
+.feed .pip{width:8px;height:8px;border-radius:50%;margin-top:6px;background:var(--gold)}
+.feed .pip.in{background:var(--up)}.feed .pip.out{background:var(--down)}.feed .pip.alert{background:var(--gold)}
+.feed time{color:var(--mute);font-size:.68rem;text-align:right;line-height:1.35;white-space:nowrap}
+.seg{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:.75rem}
+.seg button{
+  border:1px solid var(--line);border-radius:999px;padding:7px 12px;font-size:.74rem;color:var(--mute);font-weight:700;
+  background:var(--panel)
+}
+.seg button[aria-pressed=true]{border-color:var(--gold);color:var(--gold);background:var(--gold-dim)}
+
+.list-menu{list-style:none}
+.list-menu li{border-bottom:1px solid var(--line)}
+.list-menu li:last-child{border-bottom:0}
+.list-menu a,.list-menu button{
+  width:100%;text-align:left;font-weight:700;display:flex;justify-content:space-between;align-items:center;
+  padding:14px 2px;color:var(--ink)
+}
+.list-menu .chev{color:var(--mute)}
+
+.scrim{display:none;position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.58);align-items:center;justify-content:center;padding:16px}
+.scrim.on{display:flex}
+.dialog{
+  background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:1.3rem;
+  width:min(400px,100%);max-height:90dvh;overflow-y:auto;box-shadow:var(--shadow)
+}
+.dialog h3{margin-bottom:.35rem;font-size:1.1rem}
+.dialog p{color:var(--mute);font-size:.88rem;margin-bottom:.9rem}
+.dialog-actions{display:flex;gap:8px;margin-top:1rem}
+.dialog-actions .btn{flex:1}
+.warn-box{
+  background:color-mix(in srgb,var(--down) 12%,var(--panel));
+  border:1px solid color-mix(in srgb,var(--down) 35%,var(--line));
+  border-radius:12px;padding:12px 14px;font-size:.84rem;font-weight:700;color:var(--down);margin-bottom:1rem;line-height:1.4
+}
+
+.toasts{position:fixed;top:calc(var(--top) + 8px);right:12px;z-index:120;display:flex;flex-direction:column;gap:8px;max-width:min(320px,calc(100vw - 24px));pointer-events:none}
+.toast{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--gold);border-radius:12px;padding:12px 14px;font-size:.84rem;font-weight:700;pointer-events:auto;box-shadow:var(--shadow)}
+.toast.ok{border-left-color:var(--up)}.toast.bad{border-left-color:var(--down)}
+
+.dock{
+  position:fixed;left:50%;bottom:0;transform:translateX(-50%);width:min(var(--max),100%);z-index:50;
+  display:grid;grid-template-columns:repeat(4,1fr);gap:2px;
+  padding:8px 8px calc(10px + var(--safe-b));
+  background:color-mix(in srgb,var(--panel) 92%,transparent);backdrop-filter:blur(18px);
+  border-top:1px solid var(--line)
+}
+.dock button{
+  display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 4px;border-radius:14px;
+  font-size:.66rem;font-weight:750;color:var(--mute)
+}
+.dock button[aria-current=page]{color:var(--gold);background:var(--gold-dim)}
+.dock svg{width:22px;height:22px}
+
+.empty{text-align:center;color:var(--mute);padding:1.15rem .5rem;font-size:.86rem}
+.foot{text-align:center;font-size:.7rem;color:var(--mute);padding:1.2rem 0 .15rem}
+.foot b{color:var(--gold)}
+.disclaimer{font-size:.73rem;color:var(--mute);line-height:1.45;margin-top:8px}
+.legend{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;font-size:.7rem;color:var(--mute)}
+.legend i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px}
+h1.page-title{font-size:clamp(1.2rem,3vw,1.5rem);font-weight:800;letter-spacing:-.03em;margin-bottom:14px}
+.prose{color:var(--mute);line-height:1.6;font-size:.9rem}
+.prose p{margin-bottom:.7rem}
+.prose h3{color:var(--ink);font-size:.92rem;margin:1rem 0 .4rem}
+.prose ul,.prose ol{padding-left:1.1rem;margin-bottom:.7rem}
+.prose li{margin-bottom:.3rem}
+.prose strong{color:var(--ink)}
+.wa-btn{display:inline-flex;align-items:center;justify-content:center;width:100%;padding:13px 14px;border-radius:12px;font-weight:800;background:#25D366;color:#063;margin-top:8px}
+.profile-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(136px,1fr));gap:8px;margin-top:.75rem}
+.stat-chip{background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:12px}
+.stat-chip span{display:block;font-size:.68rem;color:var(--mute);margin-bottom:3px;font-weight:650}
+.stat-chip strong{font-size:.95rem;font-weight:800;font-variant-numeric:tabular-nums}
+.avatar{width:52px;height:52px;border-radius:15px;background:linear-gradient(145deg,var(--gold),#d97706);display:grid;place-items:center;font-weight:800;color:#0a0c10;flex-shrink:0}
+.profile-head{display:flex;gap:12px;align-items:center;margin-bottom:.35rem}
+.hidden-file{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}
+.toolbar{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+
+</style>
+</head>
+
+<body>
+<div class="toasts" id="toasts" aria-live="polite"></div>
+<div class="sr-only" id="balLive" aria-live="polite" aria-atomic="true"></div>
+
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-mark" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M12 3L4 8v7c0 5 3.5 9 8 10 4.5-1 8-5 8-10V8l-8-5z" fill="#0a0c10"/><path d="M12 8l-4 2.5v4c0 2.8 1.8 5 4 5.8 2.2-.8 4-3 4-5.8v-4L12 8z" fill="#f0b90b"/></svg>
+    </div>
+    <div>JoyJet<small>CAPITAL</small></div>
+  </div>
+  <nav class="top-links" aria-label="Primary">
+    <a href="#home" data-route="home">Dashboard</a>
+    <a href="#trade" data-route="trade">Invest</a>
+    <a href="#history" data-route="history">History</a>
+    <a href="#support" data-route="support">Support</a>
+    <a href="#about" data-route="about">About</a>
+    <a href="#terms" data-route="terms" class="nav-extra">Terms</a>
+    <a href="#privacy" data-route="privacy" class="nav-extra">Privacy</a>
+  </nav>
+  <div class="header-actions">
+    <button type="button" class="install" id="installBtn">Install</button>
+    <button type="button" class="icon-btn" id="themeBtn" aria-label="Toggle theme">◐</button>
+    <button type="button" class="burger" id="burger" aria-label="Open menu">☰</button>
+  </div>
+</header>
+
+<div class="mobile-drawer" id="drawer" hidden>
+  <nav>
+    <a href="#home" data-route="home">Dashboard</a>
+    <a href="#trade" data-route="trade">Invest</a>
+    <a href="#history" data-route="history">History</a>
+    <a href="#pulse" data-route="pulse">Pulse</a>
+    <a href="#me" data-route="me">Me</a>
+    <a href="#support" data-route="support">Support</a>
+    <a href="#about" data-route="about">About</a>
+    <a href="#terms" data-route="terms">Terms</a>
+    <a href="#privacy" data-route="privacy">Privacy</a>
+  </nav>
+</div>
+
+<main class="shell">
+  <section class="view on" id="view-home" data-view="home">
+    <div class="hero">
+      <p class="greet">Hello, <strong id="who">Anthony &amp; Indiana</strong> 💸</p>
+      <p class="bal" id="balTotal">$0.00</p>
+      <div class="hero-meta">
+        <div class="meta-pill"><span>Cash</span><strong id="balCash">$0</strong></div>
+        <div class="meta-pill"><span>Holdings</span><strong id="balHold">$0</strong></div>
+        <div class="meta-pill"><span>Cost basis</span><strong id="balCost">$0</strong></div>
+        <div class="meta-pill"><span>P&amp;L</span><strong id="balPnl">$0</strong></div>
+      </div>
+    </div>
+
+    <div class="goal" aria-label="Savings goal">
+      <div class="goal-head">
+        <h2>Goal · $10,000</h2>
+        <span class="goal-dead" id="goalDead">—</span>
+      </div>
+      <div class="track" role="progressbar" aria-valuemin="0" aria-valuemax="10000" aria-valuenow="0" id="goalBar"><i id="goalFill"></i></div>
+      <div class="goal-foot">
+        <span id="goalPct">0%</span>
+        <span id="goalLeft">$10,000 to go</span>
+      </div>
+      <div class="goal-hint" id="goalHint"></div>
+    </div>
+
+    <div class="actions">
+      <button type="button" class="btn btn-gold" data-act="deposit">+ Deposit</button>
+      <button type="button" class="btn btn-ghost" data-act="withdraw">− Withdraw</button>
+    </div>
+
+    <div class="grid-2">
+      <div class="panel">
+        <h2>Equity over time</h2>
+        <div class="chart-box" id="equityBox"></div>
+      </div>
+      <div class="panel">
+        <h2>Allocation</h2>
+        <div class="chart-box" id="allocBox"></div>
+        <div class="legend" id="allocLegend"></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Positions (FIFO)</h2>
+      <div class="table-wrap" id="holdingsMount"></div>
+    </div>
+
+    <details class="details">
+      <summary>Market quotes</summary>
+      <div class="inner">
+        <div class="tickers" id="tickers"></div>
+        <p class="disclaimer">Indicative quotes for planning on this device. Not a live brokerage feed.</p>
+      </div>
+    </details>
+  </section>
+
+  <section class="view" id="view-trade" data-view="trade">
+    <h1 class="page-title">Invest</h1>
+    <div class="panel">
+      <h2>Buy from cash</h2>
+      <div class="field"><label for="asset">Asset</label><select id="asset"></select></div>
+      <div class="field"><label for="usdIn">Amount (USD)</label><input id="usdIn" type="number" min="1" step="0.01" value="500" inputmode="decimal"></div>
+      <button type="button" class="btn btn-gold" data-act="buy">Invest now</button>
+    </div>
+    <div class="panel">
+      <h2>Blueprints</h2>
+      <div class="rail" id="blueprints" role="listbox" aria-label="Blueprints"></div>
+      <div class="preview" id="planPreview"></div>
+      <button type="button" class="btn btn-gold" data-act="plan-buy" id="planBuy" disabled style="margin-top:12px">Confirm blueprint</button>
+    </div>
+  </section>
+
+  <section class="view" id="view-pulse" data-view="pulse">
+    <h1 class="page-title">Pulse</h1>
+    <div class="panel">
+      <h2>Price triggers</h2>
+      <div class="field"><label for="aSym">Asset</label><select id="aSym"></select></div>
+      <div class="field"><label for="aPx">Target USD</label><input id="aPx" type="number" min="0" step="0.01" inputmode="decimal"></div>
+      <div class="field"><label for="aDir">When</label>
+        <select id="aDir"><option value="above">Crosses above</option><option value="below">Crosses below</option></select>
+      </div>
+      <button type="button" class="btn btn-gold" data-act="arm">Arm trigger</button>
+    </div>
+    <div class="panel"><h2>Armed</h2><div id="armedMount"></div></div>
+    <div class="panel"><h2>Triggered log</h2><ul class="feed" id="triggeredMount"></ul></div>
+    <div class="panel"><h2>Activity</h2><ul class="feed" id="feedMount"></ul></div>
+  </section>
+
+  <section class="view" id="view-history" data-view="history">
+    <h1 class="page-title">History</h1>
+    <div class="seg" id="txSeg" role="tablist">
+      <button type="button" data-filter="all" aria-pressed="true">All</button>
+      <button type="button" data-filter="Deposit">Deposit</button>
+      <button type="button" data-filter="Invest">Invest</button>
+      <button type="button" data-filter="Sell">Sell</button>
+      <button type="button" data-filter="Withdraw">Withdraw</button>
+    </div>
+    <div class="panel">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+        <h2 style="margin:0">Ledger</h2>
+        <div class="toolbar">
+          <button type="button" class="btn btn-ghost btn-sm" data-act="csv">CSV</button>
+          <button type="button" class="btn btn-ghost btn-sm" data-act="export-json">Export</button>
+          <button type="button" class="btn btn-ghost btn-sm" data-act="import-json">Import</button>
+          <button type="button" class="btn btn-ghost btn-sm" data-act="statement">Statement</button>
+        </div>
+      </div>
+      <ul class="feed" id="ledgerMount"></ul>
+    </div>
+    <div class="panel">
+      <h2>Tax lots (FIFO)</h2>
+      <div class="table-wrap" id="taxMount"></div>
+      <p class="disclaimer">Not tax advice. Acquired / sold dates and long/short flags come from lot ages on this device.</p>
+      <button type="button" class="btn btn-ghost" data-act="tax-csv" style="margin-top:10px">Export tax CSV</button>
+    </div>
+    <input type="file" id="importFile" class="hidden-file" accept="application/json,.json">
+  </section>
+
+  <section class="view" id="view-me" data-view="me">
+    <h1 class="page-title">Profile</h1>
+    <div class="panel">
+      <div class="profile-head">
+        <div class="avatar" aria-hidden="true">AI</div>
+        <div>
+          <p style="font-weight:800;font-size:1.12rem" id="meWho">Anthony &amp; Indiana</p>
+          <p style="color:var(--mute);font-size:.82rem">On-device portfolio · JoyJet Capital</p>
+        </div>
+      </div>
+      <div class="profile-grid">
+        <div class="stat-chip"><span>Available</span><strong id="meBal">$0</strong></div>
+        <div class="stat-chip"><span>Holdings</span><strong id="meHold">$0</strong></div>
+        <div class="stat-chip"><span>Realized P&amp;L</span><strong id="meRealized">$0</strong></div>
+        <div class="stat-chip"><span>Unrealized P&amp;L</span><strong id="meUnreal">$0</strong></div>
+      </div>
+    </div>
+    <div class="panel">
+      <h2>Goal snapshot</h2>
+      <p class="goal-compact" id="meGoalSnap"></p>
+      <button type="button" class="btn btn-ghost" data-route="home" style="margin-top:10px">Open dashboard goal</button>
+    </div>
+    <div class="panel"><h2>Holdings</h2><div id="meHoldings"></div></div>
+    <div class="panel"><h2>Recent activity</h2><ul class="feed" id="meActivity"></ul></div>
+    <div class="panel">
+      <ul class="list-menu">
+        <li><button type="button" id="themeBtnMe">Theme <span class="chev" id="themeLabel">Dark</span></button></li>
+        <li><a href="#support" data-route="support">Support <span class="chev">›</span></a></li>
+        <li><a href="#about" data-route="about">About <span class="chev">›</span></a></li>
+        <li><a href="#terms" data-route="terms">Terms <span class="chev">›</span></a></li>
+        <li><a href="#privacy" data-route="privacy">Privacy <span class="chev">›</span></a></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="view" id="view-support" data-view="support">
+    <h1 class="page-title">Support</h1>
+    <div class="panel prose">
+      <h2 style="text-transform:none;letter-spacing:0;color:var(--ink);font-size:1rem;margin-bottom:.5rem">JoyJet Capital Support</h2>
+      <p>Questions about plans or your account? Contact the team.</p>
+      <p><a href="mailto:joyjetcapitalsupport@gmail.com" style="color:var(--gold)">joyjetcapitalsupport@gmail.com</a><br>WhatsApp: +1 (919) 724-1336</p>
+      <a class="wa-btn" href="https://wa.me/19197241336?text=Hello%20JoyJet%20Capital%2C%20I%20would%20like%20to%20make%20an%20Investment%20in%20your%20company%2C%20how%20much%20is%20the%20investment%E2%80%99s%20starter%20pack%20plan%20and%20how%20much%20is%20the%20initial%20investment%20deposit%20cost%20and%20interest%20rates%3F" target="_blank" rel="noopener noreferrer">Chat on WhatsApp</a>
+      <p class="disclaimer">This web app tracks balances on your device. Funded investment products are arranged with support — not executed as custody inside this page.</p>
+    </div>
+  </section>
+
+  <section class="view" id="view-about" data-view="about">
+    <h1 class="page-title">About</h1>
+    <div class="panel prose">
+      <h2 style="text-transform:none;letter-spacing:0;font-size:1.05rem;color:var(--gold);margin-bottom:.35rem">JoyJet Capital Unlimited</h2>
+      <p style="font-weight:700;color:var(--ink)">Where Your Money Takes Flight</p>
+      <p>A modern savings and investment brand with an on-device portfolio tracker for clarity and discipline.</p>
+      <h3>What this app does</h3>
+      <ul>
+        <li>Tracks cash and holdings on this device with a FIFO ledger</li>
+        <li>Charts equity over calendar time and allocation mix</li>
+        <li>Savings goal of $10,000 by Dec 31, 2026 with contribution hints</li>
+        <li>Blueprints, price triggers with a triggered log, CSV/JSON export</li>
+        <li>Support contact for plan questions via email and WhatsApp</li>
+      </ul>
+      <h3>What this app is not</h3>
+      <p>Not a bank, broker, or custodial wallet. Not a guarantee of yield. Market quotes are indicative for planning.</p>
+      <a class="wa-btn" href="https://wa.me/19197241336?text=Hello%20JoyJet%20Capital%2C%20I%20would%20like%20to%20make%20an%20Investment%20in%20your%20company%2C%20how%20much%20is%20the%20investment%E2%80%99s%20starter%20pack%20plan%20and%20how%20much%20is%20the%20initial%20investment%20deposit%20cost%20and%20interest%20rates%3F" target="_blank" rel="noopener noreferrer">Chat on WhatsApp</a>
+    </div>
+  </section>
+
+  <section class="view" id="view-terms" data-view="terms">
+    <h1 class="page-title">Terms</h1>
+    <div class="panel prose">
+      <p style="font-size:.78rem">Last Updated: September 27, 2026</p>
+      <p>By using JoyJet Capital Unlimited services or this site, you agree to these Terms. You must be 18+.</p>
+      <h3>Risk</h3><p>Investments involve risk. Past performance does not guarantee future returns. This is not financial advice.</p>
+      <h3>Accounts &amp; data</h3><p>You are responsible for account security. Portfolio data on this page may be stored in your browser only.</p>
+      <h3>Deposits &amp; withdrawals</h3><p>Funding and payouts for product plans are handled with support under separate instructions. In-app deposit may require device verification.</p>
+      <h3>Contact</h3><p><a href="mailto:joyjetcapitalsupport@gmail.com" style="color:var(--gold)">joyjetcapitalsupport@gmail.com</a></p>
+    </div>
+  </section>
+
+  <section class="view" id="view-privacy" data-view="privacy">
+    <h1 class="page-title">Privacy</h1>
+    <div class="panel prose">
+      <p style="font-size:.78rem">Last Updated: September 27, 2026</p>
+      <p>We may collect name, email, phone (WhatsApp), and support-related details. On-device ledger data can remain local to your browser.</p>
+      <p>We do not sell personal data. Contact <a href="mailto:joyjetcapitalsupport@gmail.com" style="color:var(--gold)">joyjetcapitalsupport@gmail.com</a> for access or deletion requests.</p>
+    </div>
+  </section>
+</main>
+
+<nav class="dock" aria-label="App">
+  <button type="button" data-route="home" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-5v-6H10v6H5a1 1 0 0 1-1-1v-9.5z"/></svg>Home</button>
+  <button type="button" data-route="trade"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17 17 7M9 7h8v8"/></svg>Trade</button>
+  <button type="button" data-route="pulse"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12h3l2-6 4 12 2-6h5"/></svg>Pulse</button>
+  <button type="button" data-route="me"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="3.5"/><path d="M5 19c1.5-3 4-4.5 7-4.5s5.5 1.5 7 4.5"/></svg>Me</button>
+</nav>
+
+<div class="scrim" id="dlgDeposit" role="dialog" aria-modal="true" aria-labelledby="depTitle">
+  <div class="dialog" data-trap>
+    <h3 id="depTitle">Deposit verification</h3>
+    <div class="warn-box">NEW DEVICE DETECTED. PLEASE COMPLETE 2-FACTOR AUTHENTICATION TO PROCEED USING PRIMARY DEVICE.</div>
+    <p>Deposits remain locked in this session until verification is completed on your primary device.</p>
+    <div class="dialog-actions">
+      <button type="button" class="btn btn-gold" data-act="dep-close">Understood</button>
+    </div>
+  </div>
+</div>
+
+<div class="scrim" id="dlgSell" role="dialog" aria-modal="true" aria-labelledby="sellTitle">
+  <div class="dialog" data-trap>
+    <h3 id="sellTitle">Sell</h3>
+    <p>Close a position using FIFO lots.</p>
+    <div class="field"><label for="sellPct">Share</label>
+      <select id="sellPct"><option value="0.25">25%</option><option value="0.5">50%</option><option value="0.75">75%</option><option value="1" selected>100%</option></select>
+    </div>
+    <p>Est. proceeds <strong id="sellEst">$0</strong></p>
+    <div class="dialog-actions">
+      <button type="button" class="btn btn-danger" data-act="sell-ok">Sell</button>
+      <button type="button" class="btn btn-ghost" data-act="sell-cancel">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="scrim" id="dlgWithdraw" role="dialog" aria-modal="true">
+  <div class="dialog" data-trap>
+    <h3>Withdrawal restricted</h3>
+    <p>In-app withdrawals stay locked until goal maturity rules or support approval. Contact support for payout requests.</p>
+    <div class="dialog-actions"><button type="button" class="btn btn-gold" data-act="wd-ok">Understood</button></div>
+  </div>
+</div>
+
+<footer class="shell foot"><b>JoyJet Capital Unlimited</b> · On-device portfolio tracker · © 2026</footer>
+
+<script>
+(() => {
+  "use strict";
+
+  const SCHEMA = 8;
+  const KEY = "jj_capital_v8";
+  const GOAL = 10000;
+  const GOAL_END = Date.parse("2026-12-31T23:59:59Z");
+  const YEAR_MS = 365.25 * 864e5;
+
+  const ASSETS = Object.freeze([
+    { symbol:"BTC", name:"Bitcoin", kind:"crypto", color:"#f7931a", base:64250, cg:"bitcoin" },
+    { symbol:"ETH", name:"Ethereum", kind:"crypto", color:"#627eea", base:3450, cg:"ethereum" },
+    { symbol:"SOL", name:"Solana", kind:"crypto", color:"#14f195", base:148, cg:"solana" },
+    { symbol:"BNB", name:"BNB", kind:"crypto", color:"#f0b90b", base:585, cg:"binancecoin" },
+    { symbol:"AAPL", name:"Apple", kind:"stock", color:"#A2AAAD", base:228 },
+    { symbol:"MSFT", name:"Microsoft", kind:"stock", color:"#00A4EF", base:430 },
+    { symbol:"SPY", name:"S&P 500 ETF", kind:"etf", color:"#6366f1", base:565 }
+  ]);
+  const bySym = Object.fromEntries(ASSETS.map(a => [a.symbol, a]));
+  const PLANS = Object.freeze({
+    balanced: { label:"Balanced", tag:"Core", blurb:"BTC 30 · ETH 20 · SPY 30 · AAPL 20", w:{ BTC:.3, ETH:.2, SPY:.3, AAPL:.2 } },
+    growth: { label:"Growth", tag:"Aggressive", blurb:"SOL 25 · ETH 25 · MSFT 25 · BNB 25", w:{ SOL:.25, ETH:.25, MSFT:.25, BNB:.25 } },
+    bluechip: { label:"Blue chip", tag:"Conservative", blurb:"SPY 50 · AAPL 25 · MSFT 25", w:{ SPY:.5, AAPL:.25, MSFT:.25 } },
+    crypto: { label:"Crypto core", tag:"Digital", blurb:"BTC 50 · ETH 30 · SOL 20", w:{ BTC:.5, ETH:.3, SOL:.2 } }
+  });
+
+  const $ = (s, r=document) => r.querySelector(s);
+  const $$ = (s, r=document) => [...r.querySelectorAll(s)];
+  const money = n => new Intl.NumberFormat("en-US", { style:"currency", currency:"USD" }).format(+n || 0);
+  const units = n => (+n).toLocaleString("en-US", { maximumFractionDigits: n >= 1 ? 4 : n >= 0.01 ? 6 : 8 });
+  const clamp$ = n => Math.round((+n || 0) * 100) / 100;
+  const clampU = n => Math.round((+n || 0) * 1e8) / 1e8;
+  const pad = n => String(n).padStart(2, "0");
+  const atLocal = (y, m, d, hh=12, mm=0) => new Date(y, m - 1, d, hh, mm, 0, 0).getTime();
+  const fmtDT = ts => {
+    const d = new Date(ts);
+    return `${d.toLocaleDateString("en-US", { year:"numeric", month:"short", day:"numeric" })} · ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  };
+  const fmtD = ts => new Date(ts).toLocaleDateString("en-US", { year:"numeric", month:"short", day:"numeric" });
+
+  function clear(n) { while (n && n.firstChild) n.removeChild(n.firstChild); }
+  function txt(n, s) { if (n) n.textContent = s == null ? "" : String(s); }
+  function el(tag, attrs = {}, ...kids) {
+    const n = document.createElement(tag);
+    for (const [k, v] of Object.entries(attrs || {})) {
+      if (v == null || v === false) continue;
+      if (k === "class" || k === "className") n.className = v;
+      else if (k === "text") n.textContent = v;
+      else if (k === "dataset") Object.assign(n.dataset, v);
+      else n.setAttribute(k, v === true ? "" : v);
+    }
+    for (const c of kids.flat()) {
+      if (c == null) continue;
+      n.appendChild(typeof c === "string" ? document.createTextNode(c) : c);
+    }
+    return n;
+  }
+
+  /* ── Seed: every row fully funds (deposit before invest; withdraw covered) ── */
+  function seedTxs() {
+    const B = Object.fromEntries(ASSETS.map(a => [a.symbol, a.base]));
+    const buy = (id, asset, usd, t, note) => {
+      const px = B[asset];
+      return { id, kind: "Invest", note, amt: usd, asset, qty: clampU(usd / px), px, at: t };
+    };
+    const sell = (id, asset, usd, t, note) => {
+      const px = B[asset];
+      const qty = clampU(usd / px);
+      return { id, kind: "Sell", note, amt: usd, asset, qty, px, proceeds: usd, at: t };
+    };
+    const dep = (id, usd, t, note) => ({ id, kind: "Deposit", note, amt: usd, at: t });
+    const wd = (id, usd, t, note) => ({ id, kind: "Withdraw", note, amt: usd, at: t });
+
+    return [
+      dep(1, 300, atLocal(2025, 10, 19, 10, 0), "Deposited $300"),
+      buy(2, "BTC", 100, atLocal(2025, 10, 19, 10, 15), "Invested $100 in BTC"),
+      // cash 200 → withdraw 200 fully applies
+      wd(3, 200, atLocal(2025, 11, 3, 14, 20), "Withdrew $200"),
+      dep(4, 500, atLocal(2025, 12, 25, 9, 30), "Deposited $500"),
+      buy(5, "BTC", 500, atLocal(2025, 12, 25, 9, 45), "Invested $500 in BTC"),
+      dep(6, 1000, atLocal(2025, 12, 31, 11, 0), "Deposited $1,000"),
+      buy(7, "ETH", 1000, atLocal(2025, 12, 31, 11, 20), "Invested $1,000 in ETH"),
+      dep(8, 250, atLocal(2026, 1, 4, 13, 0), "Deposited $250"),
+      buy(9, "SOL", 250, atLocal(2026, 1, 4, 13, 10), "Invested $250 in SOL"),
+      dep(10, 500, atLocal(2026, 1, 30, 10, 0), "Deposited $500"),
+      buy(11, "BTC", 500, atLocal(2026, 1, 30, 10, 25), "Invested $500 in BTC"),
+      sell(12, "SOL", 120, atLocal(2026, 2, 14, 15, 40), "Sold partial SOL"),
+      dep(13, 100, atLocal(2026, 3, 13, 12, 0), "Deposited $100"),
+      buy(14, "ETH", 100, atLocal(2026, 3, 13, 12, 15), "Invested $100 in ETH"),
+      dep(15, 300, atLocal(2026, 6, 25, 11, 0), "Deposited $300"),
+      buy(16, "SPY", 300, atLocal(2026, 6, 25, 11, 30), "Invested $300 in SPY"),
+      dep(17, 150, atLocal(2026, 8, 30, 16, 0), "Deposited $150"),
+      buy(18, "AAPL", 150, atLocal(2026, 8, 30, 16, 20), "Invested $150 in AAPL"),
+      sell(19, "ETH", 80, atLocal(2026, 9, 10, 13, 5), "Sold partial ETH"),
+      // Today Sep 27, 2026 · 11:37 AM
+      dep(20, 150, atLocal(2026, 9, 27, 11, 37), "Deposited $150"),
+      buy(21, "AAPL", 150, atLocal(2026, 9, 27, 11, 37), "Invested $150 in AAPL stock")
+    ];
+  }
+
+  /* ── FIFO project ── */
+  function project(txs, quotes, untilTs) {
+    let cash = 0;
+    const lots = Object.fromEntries(ASSETS.map(a => [a.symbol, []]));
+    const realizedRows = [];
+    let realized = 0;
+    const activity = [];
+    const pxNow = s => quotes[s] ?? bySym[s].base;
+
+    const list = txs.slice()
+      .filter(t => untilTs == null || t.at <= untilTs)
+      .sort((a, b) => a.at - b.at || (a.id || 0) - (b.id || 0));
+
+    for (const t of list) {
+      if (t.kind === "Deposit") {
+        cash = clamp$(cash + t.amt);
+        activity.push({ kind: "deposit", text: t.note, at: t.at });
+      } else if (t.kind === "Withdraw") {
+        if (t.amt > cash + 1e-9) throw new Error("Underfunded withdraw at " + t.at);
+        cash = clamp$(cash - t.amt);
+        activity.push({ kind: "out", text: t.note, at: t.at });
+      } else if (t.kind === "Invest") {
+        const px = t.px ?? pxNow(t.asset);
+        const qty = t.qty ?? clampU(t.amt / px);
+        const usd = clamp$(t.amt ?? qty * px);
+        if (usd > cash + 1e-6) throw new Error("Underfunded invest " + t.asset + " at " + t.at);
+        cash = clamp$(cash - usd);
+        lots[t.asset].push({ qty, costPx: px, at: t.at });
+        activity.push({ kind: "buy", text: t.note, at: t.at });
+      } else if (t.kind === "Sell") {
+        let need = t.qty;
+        const px = t.px ?? pxNow(t.asset);
+        let soldQty = 0;
+        while (need > 1e-12 && lots[t.asset].length) {
+          const lot = lots[t.asset][0];
+          const take = Math.min(lot.qty, need);
+          const partProceeds = clamp$(take * px);
+          const partCost = clamp$(take * lot.costPx);
+          const gain = clamp$(partProceeds - partCost);
+          const holdMs = t.at - lot.at;
+          realizedRows.push({
+            acquired: lot.at,
+            sold: t.at,
+            asset: t.asset,
+            qty: take,
+            proceeds: partProceeds,
+            cost: partCost,
+            gain,
+            term: holdMs >= YEAR_MS ? "Long" : "Short",
+            note: t.note
+          });
+          realized = clamp$(realized + gain);
+          lot.qty = clampU(lot.qty - take);
+          need = clampU(need - take);
+          soldQty = clampU(soldQty + take);
+          if (lot.qty <= 1e-12) lots[t.asset].shift();
+        }
+        const proceeds = clamp$(t.proceeds ?? soldQty * px);
+        cash = clamp$(cash + proceeds);
+        activity.push({ kind: "sell", text: t.note, at: t.at });
+      }
+    }
+
+    const positions = {};
+    let mv = 0, cost = 0;
+    for (const a of ASSETS) {
+      let q = 0, c = 0;
+      for (const lot of lots[a.symbol]) { q += lot.qty; c += lot.qty * lot.costPx; }
+      positions[a.symbol] = { qty: clampU(q), cost: clamp$(c), lots: lots[a.symbol].map(l => ({ ...l })) };
+      mv += q * pxNow(a.symbol);
+      cost += c;
+    }
+    return {
+      cash, positions, mv, cost, realized,
+      unrealized: clamp$(mv - cost),
+      equity: clamp$(cash + mv),
+      realizedRows, activity
+    };
+  }
+
+  /* Calendar-time equity series (time-weighted path) */
+  function equitySeries(txs, quotes) {
+    if (!txs.length) return [{ t: Date.now(), equity: 0, label: "Now" }];
+    const start = Math.min(...txs.map(t => t.at));
+    const end = Math.max(Date.now(), Math.max(...txs.map(t => t.at)));
+    const span = end - start;
+    const steps = 36;
+    const points = [];
+    for (let i = 0; i <= steps; i++) {
+      const t = start + (span * i) / steps;
+      let b;
+      try { b = project(txs, quotes, t); }
+      catch { b = { equity: points.length ? points[points.length - 1].equity : 0 }; }
+      points.push({
+        t,
+        equity: b.equity,
+        label: new Date(t).toLocaleDateString("en-US", { month: "short", year: "2-digit" })
+      });
+    }
+    // ensure last point is full book
+    const full = project(txs, quotes);
+    points[points.length - 1] = { t: end, equity: full.equity, label: "Now" };
+    return points;
+  }
+
+  function seedState() {
+    return {
+      schema: SCHEMA,
+      theme: "dark",
+      who: "Anthony & Indiana",
+      route: "home",
+      txs: seedTxs(),
+      alerts: [],
+      triggered: [],
+      quotes: Object.fromEntries(ASSETS.map(a => [a.symbol, a.base])),
+      delta: Object.fromEntries(ASSETS.map(a => [a.symbol, 0])),
+      plan: null,
+      sellSym: null,
+      txFilter: "all"
+    };
+  }
+
+  function migrate(raw) {
+    if (!raw || !Array.isArray(raw.txs)) return seedState();
+    // chain: ensure schema 8 fields
+    raw.schema = SCHEMA;
+    if (!raw.triggered) raw.triggered = [];
+    if (!raw.alerts) raw.alerts = [];
+    if (!raw.quotes) raw.quotes = Object.fromEntries(ASSETS.map(a => [a.symbol, a.base]));
+    if (!raw.delta) raw.delta = Object.fromEntries(ASSETS.map(a => [a.symbol, 0]));
+    if (!raw.who) raw.who = "Anthony & Indiana";
+    // normalize invest/sell shapes
+    raw.txs = raw.txs.map((t, i) => {
+      const x = { ...t, id: t.id ?? i + 1 };
+      if (x.kind === "Invest" && x.asset && x.amt && !x.px) {
+        x.px = bySym[x.asset]?.base || 1;
+        x.qty = clampU(x.amt / x.px);
+      }
+      if (x.kind === "Sell" && x.asset && x.amt && !x.qty) {
+        x.px = bySym[x.asset]?.base || 1;
+        x.qty = clampU(x.amt / x.px);
+        x.proceeds = x.amt;
+      }
+      return x;
+    });
+    // ensure Sep 27 11:37 deposit+invest exist
+    const has = raw.txs.some(t => t.kind === "Deposit" && +t.amt === 150 && Math.abs(t.at - atLocal(2026, 9, 27, 11, 37)) < 60000);
+    if (!has) {
+      const px = bySym.AAPL.base;
+      raw.txs.push(
+        { id: Date.now() - 1, kind: "Deposit", note: "Deposited $150", amt: 150, at: atLocal(2026, 9, 27, 11, 37) },
+        { id: Date.now(), kind: "Invest", note: "Invested $150 in AAPL stock", amt: 150, asset: "AAPL", px, qty: clampU(150 / px), at: atLocal(2026, 9, 27, 11, 37) }
+      );
+    }
+    // validate project; if underfunded fall back to fresh seed
+    try { project(raw.txs, raw.quotes); }
+    catch { return seedState(); }
+    return raw;
+  }
+
+  function load() {
+    try {
+      const raw = JSON.parse(localStorage.getItem(KEY) || "null");
+      if (raw) return migrate(raw);
+    } catch (_) {}
+    return seedState();
+  }
+
+  const state = load();
+  document.documentElement.setAttribute("data-theme", state.theme === "light" ? "light" : "dark");
+
+  function persist() {
+    try {
+      const payload = {
+        schema: SCHEMA,
+        theme: state.theme,
+        who: state.who,
+        route: state.route,
+        txs: state.txs,
+        alerts: state.alerts,
+        triggered: state.triggered,
+        quotes: state.quotes,
+        plan: null,
+        txFilter: state.txFilter
+      };
+      const str = JSON.stringify(payload);
+      if (str.length > 4_500_000) {
+        // quota safety: drop oldest triggered entries
+        payload.triggered = (payload.triggered || []).slice(-40);
+      }
+      localStorage.setItem(KEY, JSON.stringify(payload));
+    } catch (e) {
+      if (e && e.name === "QuotaExceededError") toast("Storage full — export JSON and clear old data", "bad");
+    }
+  }
+  persist();
+
+  function book() { return project(state.txs, state.quotes); }
+  function px(s) { return state.quotes[s] ?? bySym[s].base; }
+
+  function toast(msg, tone) {
+    const n = el("div", { class: "toast " + (tone === "ok" ? "ok" : tone === "bad" ? "bad" : "") }, msg);
+    $("#toasts").appendChild(n);
+    setTimeout(() => n.remove(), 3200);
+  }
+
+  /* Focus trap */
+  let lastFocus = null;
+  let trapHandler = null;
+  function focusables(root) {
+    return [...root.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')]
+      .filter(el => !el.disabled && el.offsetParent !== null);
+  }
+  function openDlg(id) {
+    lastFocus = document.activeElement;
+    const scrim = $("#" + id);
+    scrim.classList.add("on");
+    const box = scrim.querySelector("[data-trap]") || scrim;
+    const list = focusables(box);
+    if (list[0]) list[0].focus();
+    trapHandler = e => {
+      if (e.key === "Escape") { closeDlg(id); return; }
+      if (e.key !== "Tab" || !list.length) return;
+      const first = list[0], last = list[list.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    };
+    document.addEventListener("keydown", trapHandler);
+  }
+  function closeDlg(id) {
+    $("#" + id).classList.remove("on");
+    if (trapHandler) document.removeEventListener("keydown", trapHandler);
+    trapHandler = null;
+    if (lastFocus && lastFocus.focus) lastFocus.focus();
+    lastFocus = null;
+  }
+
+  /* Charts — always SVG (stable, no empty CDN state) + optional Chart enhancement */
+  function drawLine(host, series) {
+    clear(host);
+    if (!series.length) return;
+    const w = 360, h = 170, pad = 12;
+    const vals = series.map(p => p.equity);
+    const min = Math.min(...vals), max = Math.max(...vals), span = max - min || 1;
+    const pts = series.map((p, i) => {
+      const x = pad + (i / (series.length - 1 || 1)) * (w - pad * 2);
+      const y = h - pad - ((p.equity - min) / span) * (h - pad * 2);
+      return [x, y];
+    });
+    const d = pts.map((p, i) => (i ? "L" : "M") + p[0].toFixed(1) + "," + p[1].toFixed(1)).join(" ");
+    const area = d + ` L${pts.at(-1)[0]},${h - 4} L${pts[0][0]},${h - 4} Z`;
+    const ns = "http://www.w3.org/2000/svg";
+    const svg = document.createElementNS(ns, "svg");
+    svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
+    svg.setAttribute("preserveAspectRatio", "none");
+    svg.setAttribute("role", "img");
+    svg.setAttribute("aria-label", "Equity over calendar time");
+    const a = document.createElementNS(ns, "path");
+    a.setAttribute("d", area); a.setAttribute("fill", "rgba(240,185,11,.16)");
+    const p = document.createElementNS(ns, "path");
+    p.setAttribute("d", d); p.setAttribute("fill", "none"); p.setAttribute("stroke", "#f0b90b");
+    p.setAttribute("stroke-width", "2.4"); p.setAttribute("stroke-linejoin", "round");
+    svg.appendChild(a); svg.appendChild(p);
+    host.appendChild(svg);
+  }
+  function drawDonut(host, slices) {
+    clear(host);
+    const total = slices.reduce((n, s) => n + s.v, 0);
+    if (!total) { host.appendChild(el("p", { class: "empty", text: "No allocation yet" })); return; }
+    const ns = "http://www.w3.org/2000/svg";
+    const svg = document.createElementNS(ns, "svg");
+    svg.setAttribute("viewBox", "0 0 160 160");
+    let ang = -Math.PI / 2; const r = 54, cx = 80, cy = 80, sw = 18;
+    for (const s of slices) {
+      const sweep = (s.v / total) * Math.PI * 2, a2 = ang + sweep;
+      const x1 = cx + r * Math.cos(ang), y1 = cy + r * Math.sin(ang);
+      const x2 = cx + r * Math.cos(a2), y2 = cy + r * Math.sin(a2);
+      const large = sweep > Math.PI ? 1 : 0;
+      const path = document.createElementNS(ns, "path");
+      path.setAttribute("d", `M ${x1} ${y1} A ${r} ${r} 0 ${large} 1 ${x2} ${y2}`);
+      path.setAttribute("fill", "none"); path.setAttribute("stroke", s.color); path.setAttribute("stroke-width", sw);
+      svg.appendChild(path); ang = a2;
+    }
+    host.appendChild(svg);
+  }
+
+  function goalMeta(equity) {
+    const left = Math.max(0, GOAL - equity);
+    const pct = Math.min(100, (equity / GOAL) * 100);
+    const ms = GOAL_END - Date.now();
+    const days = Math.max(0, Math.ceil(ms / 864e5));
+    const weeks = Math.max(1, days / 7);
+    const weekly = left / weeks;
+    const daily = left / Math.max(1, days);
+    const dead = ms <= 0 ? "Goal date reached" : `${days}d left`;
+    return { left, pct, days, weekly, daily, dead };
+  }
+
+  function paint() {
+    let b;
+    try { b = book(); }
+    catch (e) { toast("Ledger error — reset recommended", "bad"); b = project(seedTxs(), state.quotes); }
+
+    // hero
+    const pnl = b.unrealized + b.realized;
+    txt($("#balTotal"), money(b.equity));
+    txt($("#balCash"), money(b.cash));
+    txt($("#balHold"), money(b.mv));
+    txt($("#balCost"), money(b.cost));
+    const pnlEl = $("#balPnl");
+    txt(pnlEl, (pnl >= 0 ? "+" : "") + money(pnl));
+    pnlEl.classList.toggle("up", pnl >= 0);
+    pnlEl.classList.toggle("down", pnl < 0);
+    txt($("#balLive"), `Available balance ${money(b.equity)}`);
+
+    // goal
+    const g = goalMeta(b.equity);
+    $("#goalFill").style.width = g.pct.toFixed(1) + "%";
+    $("#goalBar").setAttribute("aria-valuenow", Math.round(b.equity));
+    txt($("#goalPct"), g.pct.toFixed(1) + "% of $10,000");
+    txt($("#goalLeft"), money(g.left) + " to go");
+    txt($("#goalDead"), g.dead);
+    const hint = $("#goalHint");
+    clear(hint);
+    if (g.left <= 0) {
+      hint.appendChild(el("div", { class: "chip" }, "Status", el("b", { text: "Target reached" })));
+    } else {
+      hint.appendChild(el("div", { class: "chip" }, "Suggested weekly", el("b", { text: money(g.weekly) })));
+      hint.appendChild(el("div", { class: "chip" }, "Suggested daily", el("b", { text: money(g.daily) })));
+    }
+    txt($("#meGoalSnap"), `${money(b.equity)} of ${money(GOAL)} · ${g.pct.toFixed(1)}% · ${g.dead}. Suggested ${money(g.weekly)}/week to finish by Dec 31, 2026.`);
+
+    // charts
+    drawLine($("#equityBox"), equitySeries(state.txs, state.quotes));
+    const slices = ASSETS.map(a => ({
+      label: a.symbol, color: a.color, v: (b.positions[a.symbol]?.qty || 0) * px(a.symbol)
+    })).filter(s => s.v > 0.5);
+    drawDonut($("#allocBox"), slices);
+    const total = slices.reduce((n, s) => n + s.v, 0) || 1;
+    clear($("#allocLegend"));
+    slices.forEach(s => $("#allocLegend").appendChild(
+      el("span", {}, el("i", { style: `background:${s.color}` }), `${s.label} ${Math.round(s.v / total * 100)}%`)
+    ));
+
+    // holdings
+    const hm = $("#holdingsMount");
+    clear(hm);
+    const rows = ASSETS.filter(a => (b.positions[a.symbol]?.qty || 0) > 1e-10);
+    if (!rows.length) hm.appendChild(el("p", { class: "empty", text: "No holdings yet" }));
+    else {
+      const table = el("table", {}, el("thead", {}, el("tr", {},
+        el("th", { text: "Asset" }), el("th", { text: "Value", style: "text-align:right" }), el("th", { text: "" })
+      )));
+      const tb = el("tbody");
+      rows.forEach(a => {
+        const h = b.positions[a.symbol];
+        const mv = h.qty * px(a.symbol);
+        const u = mv - h.cost;
+        tb.appendChild(el("tr", {},
+          el("td", {},
+            el("div", { class: "asset-cell" }, el("span", { class: "dot", style: `background:${a.color}` }), a.symbol, el("span", { class: "tag", text: a.kind })),
+            el("div", { style: "font-size:.7rem;color:var(--mute)", text: `${units(h.qty)} · cost ${money(h.cost)} · ${h.lots.length} lot(s)` })
+          ),
+          el("td", { style: "text-align:right" }, money(mv),
+            el("div", { class: u >= 0 ? "up" : "down", style: "font-size:.72rem", text: (u >= 0 ? "+" : "") + money(u) })
+          ),
+          el("td", { style: "text-align:right" },
+            el("button", { type: "button", class: "btn btn-ghost btn-sm", "data-act": "sell", "data-sym": a.symbol, text: "Sell" })
+          )
+        ));
+      });
+      table.appendChild(tb);
+      hm.appendChild(table);
+    }
+
+    // tickers
+    const tk = $("#tickers");
+    clear(tk);
+    ASSETS.forEach(a => {
+      const d = state.delta[a.symbol] || 0;
+      tk.appendChild(el("div", { class: "ticker" },
+        el("div", { class: "sym" }, a.symbol, el("span", { class: "tag", text: a.kind })),
+        el("div", { class: "px", text: money(px(a.symbol)) }),
+        el("div", { class: "d " + (d >= 0 ? "up" : "down"), text: (d >= 0 ? "+" : "") + d.toFixed(2) + "%" })
+      ));
+    });
+
+    // feeds
+    paintFeed($("#feedMount"), b.activity.slice().reverse().slice(0, 12));
+    paintFeed($("#meActivity"), b.activity.slice().reverse().slice(0, 8));
+    paintTriggered();
+    paintLedger();
+    paintTax(b);
+    paintArmed();
+    paintMe(b);
+    txt($("#who"), state.who);
+    txt($("#meWho"), state.who);
+    txt($("#themeLabel"), state.theme === "light" ? "Light" : "Dark");
+    updatePlanPreview();
+  }
+
+  function paintFeed(mount, items) {
+    clear(mount);
+    if (!items.length) { mount.appendChild(el("li", { class: "empty", text: "No activity" })); return; }
+    items.forEach(e => {
+      const pip = e.kind === "deposit" || e.kind === "sell" ? "in" : e.kind === "buy" ? "out" : e.kind === "alert" ? "alert" : "";
+      mount.appendChild(el("li", {},
+        el("span", { class: "pip " + pip }),
+        el("span", { text: e.text }),
+        el("time", { text: fmtDT(e.at) })
+      ));
+    });
+  }
+
+  function paintTriggered() {
+    const mount = $("#triggeredMount");
+    clear(mount);
+    const list = (state.triggered || []).slice().reverse().slice(0, 20);
+    if (!list.length) { mount.appendChild(el("li", { class: "empty", text: "No triggers fired yet" })); return; }
+    list.forEach(e => {
+      mount.appendChild(el("li", {},
+        el("span", { class: "pip alert" }),
+        el("span", { text: e.text }),
+        el("time", { text: fmtDT(e.at) })
+      ));
+    });
+  }
+
+  function sortTxs(list) {
+    const rank = { Deposit: 0, Invest: 1, Sell: 2, Withdraw: 3 };
+    return list.slice().sort((a, b) => b.at - a.at || (rank[a.kind] ?? 9) - (rank[b.kind] ?? 9));
+  }
+
+  function paintLedger() {
+    const mount = $("#ledgerMount");
+    clear(mount);
+    let txs = sortTxs(state.txs);
+    if (state.txFilter !== "all") txs = txs.filter(t => t.kind === state.txFilter);
+    if (!txs.length) { mount.appendChild(el("li", { class: "empty", text: "No transactions" })); return; }
+    txs.forEach(t => {
+      const pre = t.kind === "Deposit" || t.kind === "Sell" ? "+" : "−";
+      const pip = t.kind === "Deposit" || t.kind === "Sell" ? "in" : "out";
+      const detail = t.px ? `${pre}${money(t.amt)} @ ${money(t.px)}` : `${pre}${money(t.amt)}`;
+      mount.appendChild(el("li", {},
+        el("span", { class: "pip " + pip }),
+        el("span", {},
+          el("strong", { text: t.kind + " · " }), t.note,
+          el("br"),
+          el("span", { style: "color:var(--mute);font-size:.76rem", text: detail })
+        ),
+        el("time", { text: fmtDT(t.at) })
+      ));
+    });
+  }
+
+  function paintTax(b) {
+    const mount = $("#taxMount");
+    clear(mount);
+    const rows = b.realizedRows || [];
+    if (!rows.length) { mount.appendChild(el("p", { class: "empty", text: "No realized lots yet" })); return; }
+    const table = el("table", {}, el("thead", {}, el("tr", {},
+      el("th", { text: "Acquired" }), el("th", { text: "Sold" }), el("th", { text: "Asset" }),
+      el("th", { text: "Term" }), el("th", { text: "Gain", style: "text-align:right" })
+    )));
+    const tb = el("tbody");
+    rows.slice().reverse().forEach(r => {
+      tb.appendChild(el("tr", {},
+        el("td", { text: fmtD(r.acquired) }),
+        el("td", { text: fmtD(r.sold) }),
+        el("td", { text: r.asset }),
+        el("td", { text: r.term }),
+        el("td", { class: r.gain >= 0 ? "up" : "down", style: "text-align:right", text: (r.gain >= 0 ? "+" : "") + money(r.gain) })
+      ));
+    });
+    table.appendChild(tb);
+    mount.appendChild(table);
+    const sum = rows.reduce((n, r) => n + r.gain, 0);
+    mount.appendChild(el("p", { style: "margin-top:10px;font-size:.86rem" },
+      "Total realized: ", el("strong", { class: sum >= 0 ? "up" : "down", text: (sum >= 0 ? "+" : "") + money(sum) })
+    ));
+  }
+
+  function paintArmed() {
+    const mount = $("#armedMount");
+    clear(mount);
+    if (!state.alerts.length) { mount.appendChild(el("p", { class: "empty", text: "No triggers armed" })); return; }
+    state.alerts.forEach((tr, i) => {
+      mount.appendChild(el("div", { style: "display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)" },
+        el("div", {},
+          el("strong", { text: tr.symbol + " " }), `${tr.dir} ${money(tr.px)}`,
+          el("div", { style: "font-size:.74rem;color:var(--mute)", text: "Now " + money(px(tr.symbol)) })
+        ),
+        el("button", { type: "button", class: "btn btn-ghost btn-sm", "data-act": "disarm", "data-i": String(i), text: "Disarm" })
+      ));
+    });
+  }
+
+  function paintMe(b) {
+    txt($("#meBal"), money(b.equity));
+    txt($("#meHold"), money(b.mv));
+    const r = $("#meRealized"), u = $("#meUnreal");
+    txt(r, (b.realized >= 0 ? "+" : "") + money(b.realized));
+    txt(u, (b.unrealized >= 0 ? "+" : "") + money(b.unrealized));
+    r.classList.toggle("up", b.realized >= 0); r.classList.toggle("down", b.realized < 0);
+    u.classList.toggle("up", b.unrealized >= 0); u.classList.toggle("down", b.unrealized < 0);
+    const mh = $("#meHoldings");
+    clear(mh);
+    const rows = ASSETS.filter(a => (b.positions[a.symbol]?.qty || 0) > 1e-10);
+    if (!rows.length) mh.appendChild(el("p", { class: "empty", text: "No holdings" }));
+    else rows.forEach(a => {
+      const h = b.positions[a.symbol];
+      mh.appendChild(el("div", { style: "display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line);font-size:.86rem" },
+        el("span", {}, el("strong", { text: a.symbol + " " }), el("span", { style: "color:var(--mute)", text: a.kind })),
+        el("span", { text: money(h.qty * px(a.symbol)) })
+      ));
+    });
+  }
+
+  function route(name) {
+    const map = { home: "home", dashboard: "home", trade: "trade", invest: "trade", pulse: "pulse", history: "history", me: "me", support: "support", about: "about", terms: "terms", privacy: "privacy" };
+    const view = map[name] || "home";
+    state.route = view;
+    $$(".view").forEach(v => v.classList.toggle("on", v.dataset.view === view));
+    $$(".dock button").forEach(b => b.setAttribute("aria-current", b.dataset.route === view ? "page" : "false"));
+    $$(".top-links a, .mobile-drawer a").forEach(a => {
+      const r = map[a.dataset.route] || a.dataset.route;
+      a.setAttribute("aria-current", r === view ? "page" : "false");
+    });
+    closeDrawer();
+    persist();
+  }
+  function closeDrawer() { $("#drawer").classList.remove("on"); $("#drawer").hidden = true; }
+
+  function commit(tx) {
+    state.txs.push({ ...tx, id: tx.id || Date.now(), at: tx.at || Date.now() });
+    persist();
+    paint();
+  }
+
+  function doBuy(sym, usd) {
+    usd = clamp$(usd);
+    const b = book();
+    if (!(usd > 0)) return toast("Enter an amount", "bad");
+    if (usd > b.cash) return toast("Insufficient cash", "bad");
+    const price = px(sym);
+    commit({ kind: "Invest", note: `Invested ${money(usd)} in ${sym}`, amt: usd, asset: sym, qty: clampU(usd / price), px: price });
+    toast(`Invested ${money(usd)} in ${sym}`, "ok");
+    route("home");
+  }
+
+  function updatePlanPreview() {
+    const host = $("#planPreview");
+    clear(host);
+    const usd = clamp$(+$("#usdIn").value || 0);
+    if (!state.plan) {
+      host.appendChild(el("p", { class: "empty", text: "Select a blueprint. Default amount $500." }));
+      return;
+    }
+    if (!(usd > 0)) {
+      host.appendChild(el("p", { class: "empty", text: "Enter a USD amount (default 500)." }));
+      return;
+    }
+    host.appendChild(el("strong", { style: "display:block;margin-bottom:8px", text: "Preview · " + money(usd) }));
+    const w = PLANS[state.plan].w;
+    const keys = Object.keys(w);
+    const table = el("table", {}, el("thead", {}, el("tr", {},
+      el("th", { text: "Asset" }), el("th", { text: "%" }), el("th", { text: "USD", style: "text-align:right" }), el("th", { text: "Qty", style: "text-align:right" })
+    )));
+    const tb = el("tbody");
+    let spent = 0;
+    keys.forEach((sym, i) => {
+      const slice = i === keys.length - 1 ? clamp$(usd - spent) : clamp$(usd * w[sym]);
+      spent += slice;
+      tb.appendChild(el("tr", {},
+        el("td", { text: sym }),
+        el("td", { text: Math.round(w[sym] * 100) + "%" }),
+        el("td", { style: "text-align:right", text: money(slice) }),
+        el("td", { style: "text-align:right", text: units(clampU(slice / px(sym))) })
+      ));
+    });
+    table.appendChild(tb);
+    host.appendChild(table);
+  }
+
+  function doPlan() {
+    if (!state.plan) return;
+    const usd = clamp$(+$("#usdIn").value);
+    const b = book();
+    if (!(usd > 0)) return toast("Set USD amount", "bad");
+    if (usd > b.cash) return toast("Insufficient cash", "bad");
+    const w = PLANS[state.plan].w;
+    const keys = Object.keys(w);
+    let spent = 0;
+    keys.forEach((sym, i) => {
+      const slice = i === keys.length - 1 ? clamp$(usd - spent) : clamp$(usd * w[sym]);
+      if (slice <= 0) return;
+      spent += slice;
+      const price = px(sym);
+      state.txs.push({
+        id: Date.now() + i, kind: "Invest",
+        note: `Blueprint ${PLANS[state.plan].label}: ${sym}`,
+        amt: slice, asset: sym, qty: clampU(slice / price), px: price, at: Date.now()
+      });
+    });
+    persist(); paint();
+    toast("Blueprint applied · " + money(usd), "ok");
+    route("home");
+  }
+
+  function openSell(sym) {
+    state.sellSym = sym;
+    txt($("#sellTitle"), "Sell " + sym + " (FIFO)");
+    updateSellEst();
+    openDlg("dlgSell");
+  }
+  function updateSellEst() {
+    if (!state.sellSym) return;
+    const h = book().positions[state.sellSym];
+    txt($("#sellEst"), money((h?.qty || 0) * +$("#sellPct").value * px(state.sellSym)));
+  }
+  function confirmSell() {
+    const sym = state.sellSym;
+    if (!sym) return;
+    const h = book().positions[sym];
+    const qty = clampU((h?.qty || 0) * +$("#sellPct").value);
+    if (!(qty > 0)) return toast("Nothing to sell", "bad");
+    const price = px(sym);
+    const proceeds = clamp$(qty * price);
+    commit({ kind: "Sell", note: `Sold ${units(qty)} ${sym}`, amt: proceeds, asset: sym, qty, px: price, proceeds });
+    closeDlg("dlgSell"); state.sellSym = null;
+    toast(`Sold ${sym} · ${money(proceeds)}`, "ok");
+  }
+
+  async function softQuotes() {
+    try {
+      const ids = ASSETS.filter(a => a.cg).map(a => a.cg).join(",");
+      const res = await fetch(
+        `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd&include_24hr_change=true`,
+        { signal: AbortSignal.timeout(8000) }
+      );
+      if (res.ok) {
+        const j = await res.json();
+        ASSETS.forEach(a => {
+          if (a.cg && j[a.cg]?.usd != null) {
+            const next = j[a.cg].usd, prev = state.quotes[a.symbol] || a.base;
+            state.delta[a.symbol] = j[a.cg].usd_24h_change != null ? j[a.cg].usd_24h_change : ((next - prev) / prev) * 100;
+            state.quotes[a.symbol] = next;
+          }
+        });
+      }
+    } catch (_) { /* silent — no badge */ }
+    // mild equity drift
+    ASSETS.filter(a => !a.cg).forEach(a => {
+      const prev = state.quotes[a.symbol] || a.base;
+      const next = Math.max(a.base * 0.75, prev * (1 + (Math.random() - 0.5) * 0.003));
+      state.delta[a.symbol] = ((next - prev) / prev) * 100;
+      state.quotes[a.symbol] = next;
+    });
+    // triggers → persistent log
+    const kept = [];
+    for (const tr of state.alerts) {
+      const price = px(tr.symbol);
+      const hit = tr.dir === "above" ? price >= tr.px : price <= tr.px;
+      if (hit) {
+        const text = `${tr.symbol} ${tr.dir} ${money(tr.px)} (was ${money(price)})`;
+        state.triggered.push({ at: Date.now(), symbol: tr.symbol, dir: tr.dir, px: tr.px, text });
+        if (state.triggered.length > 50) state.triggered = state.triggered.slice(-50);
+        toast(text, "ok");
+      } else kept.push(tr);
+    }
+    state.alerts = kept;
+    persist();
+    paint();
+  }
+
+  function download(name, text, type) {
+    const blob = new Blob([text], { type });
+    const a = Object.assign(document.createElement("a"), { href: URL.createObjectURL(blob), download: name });
+    a.click(); URL.revokeObjectURL(a.href);
+  }
+
+  document.addEventListener("click", e => {
+    const t = e.target.closest("[data-act],[data-route],[data-plan],[data-filter]");
+    if (!t) { if (e.target.id === "drawer") closeDrawer(); return; }
+    if (t.dataset.route) { route(t.dataset.route); return; }
+    if (t.dataset.plan) {
+      state.plan = t.dataset.plan;
+      $$(".plan").forEach(p => p.setAttribute("aria-checked", p.dataset.plan === state.plan ? "true" : "false"));
+      $("#planBuy").disabled = false;
+      updatePlanPreview();
+      return;
+    }
+    if (t.dataset.filter) {
+      state.txFilter = t.dataset.filter;
+      $$("#txSeg button").forEach(b => b.setAttribute("aria-pressed", b.dataset.filter === state.txFilter ? "true" : "false"));
+      paintLedger();
+      return;
+    }
+    switch (t.dataset.act) {
+      case "deposit": openDlg("dlgDeposit"); break;
+      case "dep-close": closeDlg("dlgDeposit"); break;
+      case "withdraw": openDlg("dlgWithdraw"); break;
+      case "wd-ok": closeDlg("dlgWithdraw"); break;
+      case "buy": doBuy($("#asset").value, +$("#usdIn").value); break;
+      case "plan-buy": doPlan(); break;
+      case "sell": openSell(t.dataset.sym); break;
+      case "sell-ok": confirmSell(); break;
+      case "sell-cancel": closeDlg("dlgSell"); state.sellSym = null; break;
+      case "arm": {
+        const symbol = $("#aSym").value, p = +$("#aPx").value, dir = $("#aDir").value;
+        if (!(p > 0)) return toast("Need a target", "bad");
+        state.alerts.push({ symbol, px: p, dir });
+        persist(); paintArmed(); $("#aPx").value = "";
+        toast(`Armed ${symbol}`, "ok");
+        break;
+      }
+      case "disarm":
+        state.alerts.splice(+t.dataset.i, 1); persist(); paintArmed(); break;
+      case "csv": {
+        const lines = ["datetime,kind,note,amount,asset,qty,price"];
+        sortTxs(state.txs).forEach(tx => {
+          lines.push([new Date(tx.at).toISOString(), tx.kind, JSON.stringify(tx.note), tx.amt, tx.asset || "", tx.qty || "", tx.px || ""].join(","));
+        });
+        download("joyjet-ledger.csv", "\ufeff" + lines.join("\n"), "text/csv");
+        toast("CSV downloaded", "ok"); break;
+      }
+      case "tax-csv": {
+        const b = book();
+        const lines = ["acquired,sold,asset,qty,proceeds,cost,gain,term,disclaimer"];
+        (b.realizedRows || []).forEach(r => {
+          lines.push([fmtD(r.acquired).replace(/,/g, ""), fmtD(r.sold).replace(/,/g, ""), r.asset, r.qty, r.proceeds, r.cost, r.gain, r.term, "Not tax advice"].join(","));
+        });
+        download("joyjet-tax-fifo.csv", "\ufeff" + lines.join("\n"), "text/csv");
+        toast("Tax CSV ready", "ok"); break;
+      }
+      case "export-json": {
+        download("joyjet-portfolio.json", JSON.stringify({
+          schema: SCHEMA, exportedAt: new Date().toISOString(), who: state.who,
+          txs: state.txs, alerts: state.alerts, triggered: state.triggered, quotes: state.quotes
+        }, null, 2), "application/json");
+        toast("Exported", "ok"); break;
+      }
+      case "import-json": $("#importFile").click(); break;
+      case "statement": {
+        const b = book();
+        const rows = sortTxs(state.txs).map(t =>
+          `<tr><td>${fmtDT(t.at)}</td><td>${t.kind}</td><td>${t.note}</td><td>${money(t.amt)}</td></tr>`
+        ).join("");
+        const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>JoyJet Statement</title>
+          <style>body{font-family:system-ui;padding:24px}table{width:100%;border-collapse:collapse}td,th{border-bottom:1px solid #ddd;padding:8px;text-align:left;font-size:13px}
+          h1{font-size:18px}.m{color:#666}</style></head><body>
+          <h1>JoyJet Capital — Statement</h1>
+          <p class="m">${state.who} · ${new Date().toLocaleString()} · On-device tracker</p>
+          <p>Available ${money(b.equity)} · Cash ${money(b.cash)} · Holdings ${money(b.mv)} · Realized ${money(b.realized)}</p>
+          <table><thead><tr><th>When</th><th>Type</th><th>Detail</th><th>Amount</th></tr></thead><tbody>${rows}</tbody></table>
+          <p class="m">Not tax or investment advice.</p></body></html>`;
+        download("joyjet-statement.html", html, "text/html");
+        toast("Statement downloaded", "ok");
+        break;
+      }
+    }
+  });
+
+  $("#importFile").addEventListener("change", async e => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    try {
+      const data = JSON.parse(await file.text());
+      if (!Array.isArray(data.txs)) throw new Error("bad");
+      state.txs = data.txs;
+      if (data.alerts) state.alerts = data.alerts;
+      if (data.triggered) state.triggered = data.triggered;
+      if (data.who) state.who = data.who;
+      if (data.quotes) state.quotes = { ...state.quotes, ...data.quotes };
+      const m = migrate(state);
+      Object.assign(state, m);
+      persist(); paint();
+      toast("Imported", "ok");
+    } catch (_) { toast("Import failed", "bad"); }
+    e.target.value = "";
+  });
+
+  $("#usdIn").addEventListener("input", updatePlanPreview);
+  $("#sellPct").addEventListener("change", updateSellEst);
+  function toggleTheme() {
+    state.theme = state.theme === "light" ? "dark" : "light";
+    document.documentElement.setAttribute("data-theme", state.theme);
+    persist();
+    txt($("#themeLabel"), state.theme === "light" ? "Light" : "Dark");
+  }
+  $("#themeBtn").addEventListener("click", toggleTheme);
+  const tm = $("#themeBtnMe"); if (tm) tm.addEventListener("click", toggleTheme);
+  $("#burger").addEventListener("click", () => { const d = $("#drawer"); d.hidden = false; d.classList.add("on"); });
+
+  // selects + plans
+  $("#asset").append(...ASSETS.map(a => el("option", { value: a.symbol, text: `${a.name} (${a.symbol})` })));
+  $("#aSym").append(...ASSETS.map(a => el("option", { value: a.symbol, text: `${a.name} (${a.symbol})` })));
+  const bp = $("#blueprints");
+  Object.entries(PLANS).forEach(([k, b]) => {
+    bp.appendChild(el("button", { type: "button", class: "plan", role: "option", "data-plan": k, "aria-checked": "false" },
+      el("strong", { text: b.label }), el("span", { text: b.blurb }), el("em", { text: b.tag })
+    ));
+  });
+
+  // PWA light
+  const manifest = {
+    name: "JoyJet Capital", short_name: "JoyJet", display: "standalone", start_url: "./",
+    background_color: "#090b0f", theme_color: "#f0b90b",
+    icons: [{ src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect fill='%23f0b90b' width='192' height='192' rx='40'/%3E%3Ctext x='96' y='122' text-anchor='middle' font-size='100' font-family='system-ui' font-weight='800' fill='%230a0c10'%3EJ%3C/text%3E%3C/svg%3E", sizes: "192x192", type: "image/svg+xml" }]
+  };
+  const ml = document.createElement("link");
+  ml.rel = "manifest";
+  ml.href = URL.createObjectURL(new Blob([JSON.stringify(manifest)], { type: "application/manifest+json" }));
+  document.head.append(ml);
+  let deferred;
+  window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); deferred = e; $("#installBtn").classList.add("on"); });
+  $("#installBtn").addEventListener("click", async () => {
+    if (!deferred) return; deferred.prompt(); await deferred.userChoice; deferred = null; $("#installBtn").classList.remove("on");
+  });
+  if ("serviceWorker" in navigator) {
+    const src = `self.addEventListener('install',e=>self.skipWaiting());
+self.addEventListener('activate',e=>e.waitUntil(clients.claim()));
+self.addEventListener('fetch',e=>{e.respondWith(fetch(e.request).catch(()=>caches.match(e.request)))});`;
+    navigator.serviceWorker.register(URL.createObjectURL(new Blob([src], { type: "text/javascript" })), { scope: "./" }).catch(() => {});
+  }
+
+  route(state.route || "home");
+  paint();
+  // quiet background quote refresh (no badges / no forced UI chrome)
+  softQuotes();
+  setInterval(softQuotes, 120000);
+})();
+</script>
+</body>
+</html>
